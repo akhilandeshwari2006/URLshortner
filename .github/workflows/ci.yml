@@ -43,8 +43,8 @@ jobs:
       - name: Run tests
         env:
           PORT: "8000"
-          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/bootcamp_test
+          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/bootcamp_app
           REDIS_URL: redis://localhost:6379/0
-          API_KEY_A: test-key-a
-          API_KEY_B: test-key-b
+          API_KEY_A: dev-key-a
+          API_KEY_B: dev-key-b
         run: python -m pytest
