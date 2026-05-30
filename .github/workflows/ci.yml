@@ -1,56 +1,50 @@
 name: CI
 
 on:
-push:
-branches: [main]
-
-defaults:
-run:
-working-directory: apps/api
+  push:
+    branches: [main]
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: bootcamp_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d bootcamp_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-services:
-  postgres:
-    image: postgres:16
-    env:
-      POSTGRES_DB: bootcamp_test
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - 55432:5432
-    options: >-
-      --health-cmd "pg_isready -U postgres -d bootcamp_test"
-      --health-interval 10s
-      --health-timeout 5s
-      --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
 
-  redis:
-    image: redis:7
-    ports:
-      - 6379:6379
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-steps:
-  - name: Checkout
-    uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-  - name: Setup Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install -r requirements-dev.txt
 
-  - name: Install dependencies
-    run: python -m pip install -r requirements-dev.txt
-
-  - name: Run tests
-    env:
-      PORT: "8000"
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/bootcamp_test
-      REDIS_URL: redis://localhost:6379/0
-      API_KEY_A: test-key-a
-      API_KEY_B: test-key-b
-    run: python -m pytest
-
+      - name: Run tests
+        env:
+          PORT: "8000"
+          DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:55432/bootcamp_test
+          REDIS_URL: redis://localhost:6379/0
+          API_KEY_A: test-key-a
+          API_KEY_B: test-key-b
+        run: python -m pytest
