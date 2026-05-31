@@ -48,3 +48,9 @@ jobs:
           API_KEY_A: dev-key-a
           API_KEY_B: dev-key-b
         run: python -m pytest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: docker build -t urlshortner:${{ github.sha }} .
